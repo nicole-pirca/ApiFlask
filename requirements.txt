@@ -1,0 +1,7 @@
+Flask
+flask-Cors
+facebook-scraper
+tweepy
+beautifulsoup4
+webdriver-manager
+gunicorn

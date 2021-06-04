@@ -135,7 +135,7 @@ def users_Tuitters():
             user_information = [{
                 'fecha': re.sub(r'(\d+)/(\d+)/(\d+)', r'\3/\2/\1', fechaG),
                 'descripcion': re.sub(tag_regex_texto, '', tweet.full_text),
-                'enlace': re.findall(r'(?:(?:(?:ftp|http)[s]*:\/\/|www\.)[^\.]+\.[^ \n]+)', tweet.full_text),
+                'link': re.findall(r'(?:(?:(?:ftp|http)[s]*:\/\/|www\.)[^\.]+\.[^ \n]+)', tweet.full_text),
                 'calificacion':'',
                 'noticia':  re.sub(tag_regex_texto, '', tweet.full_text),
                 'social':'Twitter',

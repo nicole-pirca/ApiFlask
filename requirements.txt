@@ -1,5 +1,5 @@
 Flask
-flask-Cors
+flask-cors
 facebook-scraper
 tweepy
 beautifulsoup4

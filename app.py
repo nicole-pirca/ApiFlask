@@ -1,50 +1,12 @@
 from flask import Flask, request
 from flask_cors import CORS
-from facebook_scraper import get_posts
 import tweepy
-from selenium import webdriver
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium import webdriver
-from bs4 import BeautifulSoup as bs
-import re as re
-import time
-import datetime
-from webdriver_manager.chrome import ChromeDriverManager
-import time, requests, os
 import re
 
 app = Flask(__name__)
 CORS(app)
 
-today = datetime.date.today().strftime('%d-%m-%Y')
 tag_regex_texto = '(?:(?:(?:ftp|http)[s]*:\/\/|@|#|www\.)[^\.]+\.[^ \n]+)'
-
-# RED SOCIAL DE FACEBOOK 
-
-@app.route('/postFacebook') 
-def users_Post():
-    try:
-#caracolradio, SaludEcuador, bbcnews, SaludEcuador, MinisterioDeGobiernoEcuador,lahoraecuador, elcomerciocom 
-        group = request.args.get('group')
-        posts = get_posts(group, pages=10)
-        for post in posts:
-            fecha = re.sub(tag_regex_fecha, '', str(post['time']))
-            fechaG = re.sub('-', '/', fecha)
-            users_locs = [{
-                'descripcion': post['text'],
-                'fecha': re.sub(r'(\d+)/(\d+)/(\d+)', r'\3/\2/\1', fechaG),
-                'calificacion': '',
-                'link':post['post_url'],
-                'social':'Facebook',
-                'noticia': post['text']
-            } for post in  posts ]
-            lista = users_locs
-        return {'post': lista} 
-    except:
-        return 'No es un grupo publico'
 
 
 #RED SOCIAL TWITTER
@@ -169,142 +131,9 @@ def remove_emoji(string):
                            "]+", flags=re.UNICODE)
     return emoji_pattern.sub(r'', string)
   
-#RED SOCIAL LINKEDIN 
-
-@app.route('/postLinkedin')
-def post_LinkedIn():
-        
-    USERNAME = 'systemvas001@gmail.com'
-    PASSWORD = 'AdminVas'
-
-    driver = webdriver.Chrome(ChromeDriverManager().install())
-    driver.get("https://www.linkedin.com/uas/login")
-    time.sleep(3)
-
-    email=driver.find_element_by_id("username")
-    email.send_keys(USERNAME)
-    password=driver.find_element_by_id("password")
-    password.send_keys(PASSWORD)
-    time.sleep(3)
-    password.send_keys(Keys.RETURN)
-
-    post_links = []
-    post_texts = []
-    post_names = []
-    actor = request.args.get('user')
-    page = actor
-    time.sleep(10)
-    driver.get(page + 'posts/?feedView=all')  
-    start=time.time()
-    lastHeight = driver.execute_script("return document.body.scrollHeight")
-    while True:
-        driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-        time.sleep(10)
-        newHeight = driver.execute_script("return document.body.scrollHeight")
-        if newHeight == lastHeight:
-            break
-        lastHeight = newHeight
-        end=time.time()
-        if round(end-start)>10:
-            break
-
-    time.sleep(5)
-    company_page = driver.page_source   
-
-    linkedin_soup = bs(company_page.encode("utf-8"), "html")
-    linkedin_soup.prettify()
-    containers = linkedin_soup.findAll("div",{"class":"occludable-update ember-view"})
-    iterations = 0
-    nos = 20
-    
-    for container in containers:
-       
-        try:
-            text_box = container.find("div",{"class":"feed-shared-update-v2__description-wrapper ember-view"})
-            text = text_box.find("span",{"dir":"ltr"})
-            texto = post_texts.append(text.text.strip())
-            iterations += 1
-            if(iterations==nos):
-                break
-        except:
-            pass
-    cadena_post = str(post_texts)
-    lista = cadena_post.split(',')
-    link = re.findall(r'(?:(?:(?:ftp|http)[s]*:\/\/|www\.)[^\.]+\.[^ \n]+)', str(post_texts))    
-    descripcion = re.sub(tag_regex_texto, '',str(post_texts))
-    posts_separados = descripcion.split('#')          
-    users_locs = [{
-        
-                'descripcion': re.sub('#','',remove_emoji(descripcion)),
-                'fecha': re.sub('-','/',today),
-                'calificacion': '',
-                'link':  link,
-                'social':'LinkedIn',
-                'noticia': re.sub('#','',remove_emoji(descripcion))
-            }]
-    lista = users_locs
-    driver.quit()
-    return {'lindelin': lista}
-
-#RED SOCIAL INSTAGRAM
-
-@app.route('/postInstagram')
-def post_Instagram():
-    actor = request.args.get('user')
-
-    driver = webdriver.Chrome(ChromeDriverManager().install())
-    driver.get(actor)
-    lenOfPage = driver.execute_script("window.scrollTo(0, document.body.scrollHeight);var lenOfPage=document.body.scrollHeight;return lenOfPage;")
-    match=False
-    while(match==False):
-        lastCount = lenOfPage
-        time.sleep(4)
-        lenOfPage = driver.execute_script("window.scrollTo(0, document.body.scrollHeight);var lenOfPage=document.body.scrollHeight;return lenOfPage;")
-        if lastCount==lenOfPage:
-            match=True
-  
-    posts = []
-    links = driver.find_elements_by_tag_name('a')
-        
-    for link in links:
-        post = link.get_attribute('href')
-        if '/p/' in post:
-            posts.append( post )
-    try:
-        for post in posts:
-            headers = {'User-Agent': 'Mozilla'}
-            r = requests.get('{}?__a=1'.format( post ), headers=headers)
-            comentarios = r.json()['graphql']['shortcode_media']['edge_media_preview_comment']['edges']
-            for i in comentarios:
-                descripcion = i['node']['text']
-                users_locs = [{
-                    'descripcion': descripcion,
-                    'fecha': re.sub('-','/',today),
-                    'calificacion': '',
-                    'link':  actor,
-                    'social':'Instagram',
-                    'noticia': descripcion,
-                }]
-                
-            lista = users_locs
-            driver.quit()
-            return {'instagram': lista}
-    except:
-        users_locs = [{
-                    'descripcion': 'no hay datos',
-                    'fecha':'no hay registros',
-                    'calificacion': '',
-                    'link':  'actor',
-                    'social':'Instagram',
-                    'noticia': 'no hay datos',
-                }]
-        driver.quit()
-        return {'Instagram': users_locs}
-        
 @app.route('/') 
 def inicio():
-    user_ip = request.remote_addr
-    return "<h1>Hello de nuevo!</h1>"
+    return "Hello de nuevo!"
 
 if __name__ == "__main__":
     app.run()

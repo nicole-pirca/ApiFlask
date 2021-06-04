@@ -1,7 +1,4 @@
 Flask
 flask-cors
-facebook-scraper
 tweepy
-beautifulsoup4
-webdriver-manager
 gunicorn

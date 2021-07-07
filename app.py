@@ -11,11 +11,15 @@ tag_regex_texto = '(?:(?:(?:ftp|http)[s]*:\/\/|@|#|www\.)[^\.]+\.[^ \n]+)'
 
 #RED SOCIAL TWITTER
 
+CONSUMER_KEY = '7uWYOBuMozICUwRpOOZYgj1wZ'
+CONSUMER_SECRET = 'mQtzDR0oo2X5uTO1NVZreaFPZbDOelSU2BsjImvZvjfHx1et9T'
+ACCESS_TOKEN = '1262492224648077318-DPLSwqqDLuW4ZdH43m5vFlnlEy25Lm'
+ACCESS_TOKEN_SECRET = '8OR3xMQ64c4rqQ6yMv0ZALr35wJFqvNcFwuajyUT7Z9bZ'
 
-CONSUMER_KEY = 'Sg9KPRUPVSS22ByxsD2Om3yh6'
-CONSUMER_SECRET = 'pX8KCJfSBXm4sk6iMQU852agow2a7gdaYkaZeZNxekXBFoP49M'
-ACCESS_TOKEN = '1262492224648077318-2QzMBDtjAt0p33W4C0EQSBCyoVW8yt'
-ACCESS_TOKEN_SECRET = 'v2I4wGhQPVLjpdhEryZrqIrgvEMQMzzhOj9VBCcCGg5iQ'
+# CONSUMER_KEY = 'Sg9KPRUPVSS22ByxsD2Om3yh6'
+# CONSUMER_SECRET = 'pX8KCJfSBXm4sk6iMQU852agow2a7gdaYkaZeZNxekXBFoP49M'
+# ACCESS_TOKEN = '1262492224648077318-2QzMBDtjAt0p33W4C0EQSBCyoVW8yt'
+# ACCESS_TOKEN_SECRET = 'v2I4wGhQPVLjpdhEryZrqIrgvEMQMzzhOj9VBCcCGg5iQ'
 
 auth = tweepy.OAuthHandler(CONSUMER_KEY,CONSUMER_SECRET)
 
@@ -33,12 +37,13 @@ tag_regex_texto = '(?:(?:(?:ftp|http)[s]*:\/\/|@|#|www\.)[^\.]+\.[^ \n]+)'
 @app.route('/getUsers')
 def users_keywords ():
     actor = request.args.get('user')
+    print(actor)
     search_language = "es"
     num = "15"
     country ="ECUADOR"
     result = api.geo_search(query= country, granularity="country") 
     place_id = result[0].id 
-    tweets = api.search(q = actor+' -filter:retweets'+ 'place:%s', 
+    tweets = api.search(q = actor+' -filter:retweets'+ 'place:%s' % place_id, 
                             lang = search_language, 
                             count = num)
     for tweet in tweets:
@@ -46,7 +51,8 @@ def users_keywords ():
         'descripcion': re.sub(tag_regex,'',remove_emoji(tweet.user.description)), 'avatar':tweet.user.profile_image_url_https, 'social': 'Twitter' 
                     } for tweet in tweets]
     lista = users_locs
-    return {'users':lista}
+    return {'users':lista} 
+  
 
 @app.route('/getUser')
 def users_description ():
@@ -133,7 +139,7 @@ def remove_emoji(string):
   
 @app.route('/') 
 def inicio():
-    return "Hello de nuevo!"
+    return "Hello de nuevo aaa!"
 
 if __name__ == "__main__":
     app.run()

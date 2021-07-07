@@ -38,7 +38,7 @@ def users_keywords ():
     country ="ECUADOR"
     result = api.geo_search(query= country, granularity="country") 
     place_id = result[0].id 
-    tweets = api.search(q = actor+' -filter:retweets'+ 'place:%s' % place_id, 
+    tweets = api.search(q = actor+' -filter:retweets'+ 'place:%s', 
                             lang = search_language, 
                             count = num)
     for tweet in tweets:
